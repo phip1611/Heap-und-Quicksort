@@ -24,7 +24,6 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
     }
 
     private HeapNode getHeapNode(double key) {
-        //ELEMENT IS NOT AVAILABLE HERE, NULL-Pointer
         return getHeapNodeRec(key, rootHeapNode);
     }
 
@@ -33,12 +32,14 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
             return null;
         }
         if (curr.getKey() == key) {
-            //ELEMENT IS AVAILABLE HERE
             return curr;
         }
         else {
-            getHeapNodeRec(key, curr.getLeft());
-            getHeapNodeRec(key, curr.getRight());
+            HeapNode x;
+            x = getHeapNodeRec(key, curr.getLeft());
+            if (x!=null) return x;
+            x = getHeapNodeRec(key, curr.getRight());
+            if (x!=null) return x;
         }
         return null;
     }

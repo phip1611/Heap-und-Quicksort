@@ -18,7 +18,7 @@ public class Main {
         hs.setNums(numsd);
         hs.createHeap();
         hs.printHeap();
-        hs.singleShiftDown(7d);
+
         hs.printHeap();
     }
 }
