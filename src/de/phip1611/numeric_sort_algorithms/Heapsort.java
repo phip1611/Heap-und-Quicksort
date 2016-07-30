@@ -25,18 +25,22 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
     public void shiftDownAll() {
         // wenn man es so mehrfach durchlaufen lässt funktioniert es auf alle Fälle
         // für relativ kleine Zahlenfolgen
-        while (canShiftDownRootNode()) {
+        while (canShiftDownAny()) {
             this.shiftDownAllR(this.rootHeapNode);
         }
     }
 
-    public boolean canShiftDownRootNode() {
-        if (rootHeapNode != null) {
-            if (rootHeapNode.getLeft().getKey() > rootHeapNode.getKey()
-                    || rootHeapNode.getLeft().getKey() > rootHeapNode.getKey()) {
-                return true;
+    public boolean canShiftDownAny() {
+        return canShiftDownAnyR(rootHeapNode);
+    }
+
+    public boolean canShiftDownAnyR(HeapNode node) {
+        if (node != null) {
+            if (node.getLeft() != null && node.getLeft().getKey() > node.getKey()
+                    || node.getRight() != null && node.getLeft().getKey() > node.getKey()) {
+                return true ;
             } else {
-                return false;
+                return canShiftDownAnyR(node.getRight()) || canShiftDownAnyR(node.getLeft());
             }
         } else {
             return false;
