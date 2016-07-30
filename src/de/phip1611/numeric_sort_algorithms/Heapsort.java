@@ -15,12 +15,40 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
         this.nums = nums;
     }
 
-    // ein einzelnes Sinkenlassen eines Elementes
+    // ein komplettes Sinkenlassen eines einzelnen Elementes
     // kann danach mit print visualisiert werden
     public void singleShiftDown(double key) {
         HeapNode x = getHeapNode(key);
-        System.out.println(x);
-        heapInstance.shiftDown(key, x);
+        heapInstance.singleShiftDown(x);
+    }
+
+    public void shiftDownAll() {
+        // wenn man es so mehrfach durchlaufen lässt funktioniert es auf alle Fälle
+        // für relativ kleine Zahlenfolgen
+        while (canShiftDownRootNode()) {
+            this.shiftDownAllR(this.rootHeapNode);
+        }
+    }
+
+    public boolean canShiftDownRootNode() {
+        if (rootHeapNode != null) {
+            if (rootHeapNode.getLeft().getKey() > rootHeapNode.getKey()
+                    || rootHeapNode.getLeft().getKey() > rootHeapNode.getKey()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    private void shiftDownAllR(HeapNode node) {
+        if (node != null) {
+            heapInstance.singleShiftDown(node);
+            shiftDownAllR(node.getLeft());
+            shiftDownAllR(node.getRight());
+        }
     }
 
     private HeapNode getHeapNode(double key) {
@@ -157,31 +185,59 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
     }
 
     protected class Heap {
-        // sinken lassen
-        private void shiftDown(double key, HeapNode node) {
+        /**
+         * Lässt ein einzelnes Element von seiner Position maximal weit sinken
+         * @param node
+         */
+        private void singleShiftDown(HeapNode node) {
+            System.out.printf("Debug: Sinken lassen von %f\n",node.getKey());
             if (node == null) {
                 System.err.println("Node is null du Pappnase!");
                 return;
             }
-            if (node.getRight() != null && node.getLeft() != null) {
-                System.out.println("shiftdown: es gibt rechten und linken nachfolger");
-                if (node.getLeft().getKey() > node.getKey()) {
-                    if (node.getRight().getKey() > node.getLeft().getKey()) {
-                        System.out.println("rechter Nachfolger ist größer als der linke und größer als der key");
+            else {
+                HeapNode nextNode = null; // Knoten wohin sinken gelassen wurde
+                if (node.getRight() != null && node.getLeft() != null) {
+                    System.out.println("shiftdown: es gibt rechten und linken nachfolger");
+                    if (node.getLeft().getKey() > node.getKey()) {
+                        if (node.getRight().getKey() > node.getLeft().getKey()) {
+                            System.out.println("rechter Nachfolger ist größer als der linke und größer als der key");
+                            double tmpkey = node.getRight().getKey();
+                            node.getRight().setKey(node.getKey());
+                            node.setKey(tmpkey);
+                            nextNode = node.getRight();
+                        } else {
+                            System.out.println("linker Nachfolger ist größer als der rechte");
+                            double tmpkey = node.getLeft().getKey();
+                            node.getLeft().setKey(node.getKey());
+                            node.setKey(tmpkey);
+                            nextNode = node.getLeft();
+                        }
+                    } else if (node.getRight().getKey() > node.getKey()) {
+                        System.out.println("rechter Knoten ist größer als der key, der linke aber nicht");
                         double tmpkey = node.getRight().getKey();
                         node.getRight().setKey(node.getKey());
                         node.setKey(tmpkey);
-                    } else {
-                        System.out.println("linker Nachfolger ist größer als der rechte");
-                        double tmpkey = node.getLeft().getKey();
-                        node.getLeft().setKey(node.getKey());
-                        node.setKey(tmpkey);
+                        nextNode = node.getRight();
                     }
-                } else if (node.getRight().getKey() > node.getKey()) {
-                    System.out.println("rechter Knoten ist größer als der key, der linke aber nicht");
-                    double tmpkey = node.getRight().getKey();
-                    node.getRight().setKey(node.getKey());
-                    node.setKey(tmpkey);
+                } else if (node.getRight() != null) {
+                    if (node.getRight().getKey() > node.getKey()) {
+                        double tmpkey = node.getKey();
+                        node.setKey(node.getRight().getKey());
+                        node.getRight().setKey(tmpkey);
+                        nextNode = node.getRight();
+                    }
+                } else if (node.getLeft() != null) {
+                    if (node.getLeft().getKey() > node.getKey()) {
+                        double tmpkey = node.getKey();
+                        node.setKey(node.getLeft().getKey());
+                        node.getLeft().setKey(tmpkey);
+                        nextNode = node.getLeft();
+                    }
+                }
+                // Element weiter sinken lassen
+                if (nextNode != null) {
+                    singleShiftDown(nextNode);
                 }
             }
         }
