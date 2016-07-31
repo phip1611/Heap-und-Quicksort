@@ -59,4 +59,16 @@ public class HeapsortTest {
         }
     }
 
+    @Test
+    public void sortArrayTest4() throws Exception {
+        double[] nums = new double[10];
+        for (int i = 0; i < 0; i++) {
+            nums[i] = 0;
+        }
+        nums = heapsort.sortArray(nums);
+        for (int i = 0; i <10; i++) {
+            assertEquals("Falsch sortiert", 0, (int)nums[i]);
+        }
+    }
+
 }
