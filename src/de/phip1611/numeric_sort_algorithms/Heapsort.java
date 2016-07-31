@@ -19,9 +19,19 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
      */
     private void shiftDownAll() {
         while (canShiftDownAny()) {
-            this.printHeap();
             this.shiftDown();
         }
+    }
+
+    private boolean isAlreadySorted() {
+        for (int i = 0; i < nums.length; i++) {
+            if (i+1 < nums.length) {
+                if (nums[i] > nums[i+1]) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -109,13 +119,16 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
     public double[] sortArray(double[] nums) {
         this.heapInstance = new Heap();
         this.nums = nums;
+        if (isAlreadySorted()) {
+            return this.nums;
+        }
         this.swapIndex = nums.length;
         this.createHeap();
-        System.out.println("====== Anfangs-Heap =======");
-        this.printHeap();
-        System.out.println("====== /Anfangs-Heap =======");
+        //System.out.println("====== Anfangs-Heap =======");
+        //this.printHeap();
+        //System.out.println("====== /Anfangs-Heap =======");
         this.shiftDownAll();
-        this.printHeap();
+        //this.printHeap();
         this.swapAndShiftDownAll();
         this.heapToArray();
         return this.nums;
@@ -130,7 +143,7 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
         HeapNode active = this.getHeapNodeByIndex(this.swapIndex);
         double tmpvalue = active.getValue();
         active.setValue(this.rootHeapNode.getValue());
-        System.out.printf("Tausch: %d(%d) --> %d(%d)\n", this.rootHeapNode.getIndex(), (int)this.rootHeapNode.getValue(), active.getIndex(), (int)tmpvalue);
+        //System.out.printf("Tausch: %d(%d) --> %d(%d)\n", this.rootHeapNode.getIndex(), (int)this.rootHeapNode.getValue(), active.getIndex(), (int)tmpvalue);
         this.rootHeapNode.setValue(tmpvalue);
         this.swapIndex--;
         this.shiftDown();
@@ -280,21 +293,21 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
                     shiftToRight = true;
                 }
             }
-            // gibt zwei NAchfolger
+            // gibt zwei Nachfolger
             if (node.hasRight() && node.hasLeft()) {
-                // rechter NAchfolger größer, linker nicht
+                // rechter Nachfolger größer, linker nicht
                 if (node.getRight().getValue() > node.getValue() &&
                         !(node.getLeft().getValue() > node.getValue())) {
                     if (node.getRight().getIndex() > swapIndex) return;
                     shiftToRight = true;
                 }
-                // linker NAchfolger größer, rechter nicht
+                // linker Nachfolger größer, rechter nicht
                 else if (node.getLeft().getValue() > node.getValue() &&
                         !(node.getRight().getValue() > node.getValue())) {
                     if (node.getLeft().getIndex() > swapIndex) return;
                     shiftToLeft = true;
                 }
-                // beide NAchfolger größer als aktueller Knoten
+                // beide Nachfolger größer als aktueller Knoten
                 else if (node.getRight().getValue() > node.getValue() &&
                         (node.getLeft().getValue() > node.getValue())) {
                     // rechter Nachfolger größer als der Linke
