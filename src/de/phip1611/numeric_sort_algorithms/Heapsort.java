@@ -1,11 +1,14 @@
 package de.phip1611.numeric_sort_algorithms;
 
 /**
- * Created by phip1611 on 27.07.16.
+ * Heapsort-Implementierung in Java. Es kann entweder direkt eine Zahlenfolge sortiert werden,
+ * oder aber Schritt für Schritt Operationen auf dem Heap ausgeführt werden, die mit
+ * der print-Methode sichtbar gemacht werden können.
  */
 public class Heapsort extends AbstractNumericSortAlgorithm {
     private HeapNode rootHeapNode;
     private Heap heapInstance;
+    private int swapIndex;
 
     public Heapsort() {
         this.heapInstance = new Heap();
@@ -13,31 +16,46 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
 
     public void setNums(double[] nums) {
         this.nums = nums;
+        this.swapIndex = nums.length;
     }
 
-    // ein komplettes Sinkenlassen eines einzelnen Elementes
-    // kann danach mit print visualisiert werden
-    public void singleShiftDown(double key) {
-        HeapNode x = getHeapNode(key);
-        heapInstance.singleShiftDown(x);
-    }
-
+    /**
+     * Multiples, rekursives Sinkenlassen,
+     * bis die Heap-Eigenschaft gilt.
+     * Notwendig, da nach Sinkenlassen-Vertauschungen
+     * weitere Sinkenlassen-Operationen am selben Knoten
+     * notwendig sein können.
+     */
     public void shiftDownAll() {
-        // wenn man es so mehrfach durchlaufen lässt funktioniert es auf alle Fälle
-        // für relativ kleine Zahlenfolgen
         while (canShiftDownAny()) {
-            this.shiftDownAllR(this.rootHeapNode);
+            this.shiftDown();
         }
     }
 
+    /**
+     * Einfaches Sinkenlassen über den ganzen Heap
+     */
+    public void shiftDown() {
+        this.shiftDownAllR(this.rootHeapNode);
+    }
+
+    /**
+     * Gibt an, ob man irgendein Element sinken lassen kann im Heap.
+     * @return boolean
+     */
     public boolean canShiftDownAny() {
         return canShiftDownAnyR(rootHeapNode);
     }
 
-    public boolean canShiftDownAnyR(HeapNode node) {
+    /**
+     * Rekursive Hilfsfunktion von canShiftDownAny()
+     * @param node
+     * @return
+     */
+    private boolean canShiftDownAnyR(HeapNode node) {
         if (node != null) {
-            if (node.getLeft() != null && node.getLeft().getKey() > node.getKey()
-                    || node.getRight() != null && node.getLeft().getKey() > node.getKey()) {
+            if (node.getLeft() != null && node.getLeft().getValue() > node.getValue()
+                    || node.getRight() != null && node.getLeft().getValue() > node.getValue()) {
                 return true ;
             } else {
                 return canShiftDownAnyR(node.getRight()) || canShiftDownAnyR(node.getLeft());
@@ -47,6 +65,10 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
         }
     }
 
+    /**
+     * Rekursive Hilfsfunktion, die einmal im ganzen Heap Elemente sinkenlässt.
+     * @param node
+     */
     private void shiftDownAllR(HeapNode node) {
         if (node != null) {
             heapInstance.singleShiftDown(node);
@@ -55,22 +77,21 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
         }
     }
 
-    private HeapNode getHeapNode(double key) {
-        return getHeapNodeRec(key, rootHeapNode);
+    private HeapNode getHeapNodeByIndex(double index) {
+        return getHeapNodeByIndexRec(index, rootHeapNode);
     }
 
-    private HeapNode getHeapNodeRec(double key, HeapNode curr) {
+    private HeapNode getHeapNodeByIndexRec(double index, HeapNode curr) {
         if (curr == null) {
             return null;
         }
-        if (curr.getKey() == key) {
+        if (curr.getIndex() == index) {
             return curr;
-        }
-        else {
+        } else {
             HeapNode x;
-            x = getHeapNodeRec(key, curr.getLeft());
+            x = getHeapNodeByIndexRec(index, curr.getLeft());
             if (x!=null) return x;
-            x = getHeapNodeRec(key, curr.getRight());
+            x = getHeapNodeByIndexRec(index, curr.getRight());
             if (x!=null) return x;
         }
         return null;
@@ -86,14 +107,54 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
         System.out.println("\n");
     }
 
+    /**
+     * Sortiert eine Liste an Zahlen mit Heapsort und gibt sie zurück.
+     * @param nums
+     * @return
+     */
     @Override
-    public double[] sortArray() {
-
-        createHeap();
+    public double[] sortArray(double[] nums) {
+        this.nums = nums;
+        this.swapIndex = nums.length;
+        this.createHeap();
+        this.shiftDownAll();
+        this.swapAndShiftDownAll();
 
         return this.nums;
     }
 
+    /**
+     * Wenn alle Elemente fertig gesunken sind, dann wird
+     * diese Methode einen einzelnen Tauschvorgang sowie einen
+     * Sinkenlassen-Vorgang ausführen.
+     */
+    public void singleSwapAndShiftDown() {
+        if (canShiftDownAny()) {
+            System.err.println("Es muss erst alles was geht sinkengelassen werden");
+        }
+        HeapNode active = this.getHeapNodeByIndex(this.swapIndex);
+        double tmpvalue = active.getValue();
+        System.out.printf("SWAP: %d --> %d\n", (int)this.rootHeapNode.getValue(), (int)tmpvalue);
+        active.setValue(this.rootHeapNode.getValue());
+        this.rootHeapNode.setValue(tmpvalue);
+        this.swapIndex--;
+        this.shiftDown();
+    }
+
+    public void swapAndShiftDownAll() {
+        if (canShiftDownAny()) {
+            System.err.println("Es muss erst alles was geht sinkengelassen werden");
+        }
+        while (swapIndex > 1) {
+            this.singleSwapAndShiftDown();
+            this.printHeap();
+        }
+    }
+
+    /**
+     * Wenn man manuell auf dem Heap arbeiten möchte, kann man
+     * nach dem man die Liste an Zahlen übergeben hat hiermit den Heap erstellen.
+     */
     public void createHeap() {
         rootHeapNode = new HeapNode(nums[0],1);
         createHeapRecursively(rootHeapNode, 1, nums.length);
@@ -120,7 +181,7 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
             printHeapRecur(node.getLeft());
             System.out.print(")<--");
         }
-        System.out.print("["+node.getIndex()+": "+node.getKey()+"]");
+        System.out.print("["+node.getIndex()+": "+node.getValue()+"]");
         if (node.getRight() != null) {
             System.out.print("-->(");
             printHeapRecur(node.getRight());
@@ -129,15 +190,15 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
     }
 
     protected class HeapNode implements Comparable<HeapNode> {
-        private double key;
+        private double value;
         private int index;
         private HeapNode left;
         private HeapNode right;
         public HeapNode(double key, int index) {
             this(key, index, null, null);
         }
-        public HeapNode(double key, int index, HeapNode left, HeapNode right) {
-            this.key = key;
+        public HeapNode(double value, int index, HeapNode left, HeapNode right) {
+            this.value = value;
             this.left = left;
             this.right = right;
             this.index = index;
@@ -151,12 +212,12 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
             this.index = index;
         }
 
-        public double getKey() {
-            return this.key;
+        public double getValue() {
+            return this.value;
         }
 
-        public void setKey(double key) {
-            this.key = key;
+        public void setValue(double value) {
+            this.value = value;
         }
 
         public void setLeft(HeapNode left) {
@@ -178,13 +239,13 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
         public String toString() {
             return "HeapNode{" +
                     "index=" + index +
-                    ", key=" + key +
+                    ", key=" + value +
                     '}';
         }
 
         @Override
         public int compareTo(HeapNode o) {
-            return Double.compare(key, o.getKey());
+            return Double.compare(value, o.getValue());
         }
     }
 
@@ -194,7 +255,6 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
          * @param node
          */
         private void singleShiftDown(HeapNode node) {
-            System.out.printf("Debug: Sinken lassen von %f\n",node.getKey());
             if (node == null) {
                 System.err.println("Node is null du Pappnase!");
                 return;
@@ -202,40 +262,51 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
             else {
                 HeapNode nextNode = null; // Knoten wohin sinken gelassen wurde
                 if (node.getRight() != null && node.getLeft() != null) {
-                    System.out.println("shiftdown: es gibt rechten und linken nachfolger");
-                    if (node.getLeft().getKey() > node.getKey()) {
-                        if (node.getRight().getKey() > node.getLeft().getKey()) {
-                            System.out.println("rechter Nachfolger ist größer als der linke und größer als der key");
-                            double tmpkey = node.getRight().getKey();
-                            node.getRight().setKey(node.getKey());
-                            node.setKey(tmpkey);
+                    if (node.getLeft().getValue() > node.getValue()) {
+                        if (node.getRight().getValue() > node.getLeft().getValue()) {
+                            if (!(node.getRight().getIndex() < swapIndex)) {
+                                return;
+                            }
+                            double tmpvalue = node.getRight().getValue();
+                            node.getRight().setValue(node.getValue());
+                            node.setValue(tmpvalue);
                             nextNode = node.getRight();
                         } else {
-                            System.out.println("linker Nachfolger ist größer als der rechte");
-                            double tmpkey = node.getLeft().getKey();
-                            node.getLeft().setKey(node.getKey());
-                            node.setKey(tmpkey);
+                            if (!(node.getLeft().getIndex() < swapIndex)) {
+                                return;
+                            }
+                            double tmpvalue = node.getLeft().getValue();
+                            node.getLeft().setValue(node.getValue());
+                            node.setValue(tmpvalue);
                             nextNode = node.getLeft();
                         }
-                    } else if (node.getRight().getKey() > node.getKey()) {
-                        System.out.println("rechter Knoten ist größer als der key, der linke aber nicht");
-                        double tmpkey = node.getRight().getKey();
-                        node.getRight().setKey(node.getKey());
-                        node.setKey(tmpkey);
+                    } else if (node.getRight().getValue() > node.getValue()) {
+                        if (!(node.getRight().getIndex() < swapIndex)) {
+                            return;
+                        }
+                        double tmpvalue = node.getRight().getValue();
+                        node.getRight().setValue(node.getValue());
+                        node.setValue(tmpvalue);
                         nextNode = node.getRight();
                     }
                 } else if (node.getRight() != null) {
-                    if (node.getRight().getKey() > node.getKey()) {
-                        double tmpkey = node.getKey();
-                        node.setKey(node.getRight().getKey());
-                        node.getRight().setKey(tmpkey);
+                    if (node.getRight().getValue() > node.getValue()) {
+                        if (!(node.getRight().getIndex() < swapIndex)) {
+                            return;
+                        }
+                        double tmpvalue = node.getValue();
+                        node.setValue(node.getRight().getValue());
+                        node.getRight().setValue(tmpvalue);
                         nextNode = node.getRight();
                     }
                 } else if (node.getLeft() != null) {
-                    if (node.getLeft().getKey() > node.getKey()) {
-                        double tmpkey = node.getKey();
-                        node.setKey(node.getLeft().getKey());
-                        node.getLeft().setKey(tmpkey);
+                    if (node.getLeft().getValue() > node.getValue()) {
+                        if (!(node.getLeft().getIndex() < swapIndex)) {
+                            return;
+                        }
+                        double tmpvalue = node.getValue();
+                        node.setValue(node.getLeft().getValue());
+                        node.getLeft().setValue(tmpvalue);
                         nextNode = node.getLeft();
                     }
                 }

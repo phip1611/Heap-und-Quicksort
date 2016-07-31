@@ -15,10 +15,7 @@ public class Main {
         }
 
         Heapsort hs = new Heapsort();
-        hs.setNums(numsd);
-        hs.createHeap();
-        hs.printHeap();
-        hs.shiftDownAll();
+        hs.sortArray(numsd);
         hs.printHeap();
     }
 }

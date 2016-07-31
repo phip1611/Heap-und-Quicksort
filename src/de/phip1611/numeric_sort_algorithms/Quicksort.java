@@ -6,7 +6,7 @@ package de.phip1611.numeric_sort_algorithms;
 public class Quicksort extends AbstractNumericSortAlgorithm {
 
     @Override
-    public double[] sortArray() {
+    public double[] sortArray(double[] nums) {
         return new double[0];
     }
 }
