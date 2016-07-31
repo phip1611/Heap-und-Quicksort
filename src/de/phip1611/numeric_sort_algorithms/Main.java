@@ -1,5 +1,7 @@
 package de.phip1611.numeric_sort_algorithms;
 
+import java.util.Arrays;
+
 public class Main {
     public static void main(String[] args) {
         System.out.println("Heapsort: Gib eine beliebige Menge an Zahlen durch \",\"-getrennt ein");
@@ -15,7 +17,8 @@ public class Main {
         }
 
         Heapsort hs = new Heapsort();
-        hs.sortArray(numsd);
-        hs.printHeap();
+        numsd = hs.sortArray(numsd);
+        System.out.println("Sortiere Zahlenfolge");
+        System.out.println(Arrays.toString(numsd));
     }
 }

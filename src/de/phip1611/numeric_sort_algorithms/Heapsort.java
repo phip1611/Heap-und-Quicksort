@@ -10,15 +10,6 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
     private Heap heapInstance;
     private int swapIndex;
 
-    public Heapsort() {
-        this.heapInstance = new Heap();
-    }
-
-    public void setNums(double[] nums) {
-        this.nums = nums;
-        this.swapIndex = nums.length;
-    }
-
     /**
      * Multiples, rekursives Sinkenlassen,
      * bis die Heap-Eigenschaft gilt.
@@ -26,8 +17,9 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
      * weitere Sinkenlassen-Operationen am selben Knoten
      * notwendig sein können.
      */
-    public void shiftDownAll() {
+    private void shiftDownAll() {
         while (canShiftDownAny()) {
+            this.printHeap();
             this.shiftDown();
         }
     }
@@ -35,7 +27,7 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
     /**
      * Einfaches Sinkenlassen über den ganzen Heap
      */
-    public void shiftDown() {
+    private void shiftDown() {
         this.shiftDownAllR(this.rootHeapNode);
     }
 
@@ -43,7 +35,7 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
      * Gibt an, ob man irgendein Element sinken lassen kann im Heap.
      * @return boolean
      */
-    public boolean canShiftDownAny() {
+    private boolean canShiftDownAny() {
         return canShiftDownAnyR(rootHeapNode);
     }
 
@@ -53,16 +45,17 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
      * @return
      */
     private boolean canShiftDownAnyR(HeapNode node) {
-        if (node != null) {
-            if (node.getLeft() != null && node.getLeft().getValue() > node.getValue()
-                    || node.getRight() != null && node.getLeft().getValue() > node.getValue()) {
-                return true ;
-            } else {
-                return canShiftDownAnyR(node.getRight()) || canShiftDownAnyR(node.getLeft());
+        if (node == null) return false;
+        if (node.getLeft() != null)
+            if (node.getLeft().getValue() > node.getValue()) {
+                return true;
             }
-        } else {
-            return false;
-        }
+        if (node.getRight() != null)
+            if (node.getRight().getValue() > node.getValue()) {
+                return true;
+            }
+        return canShiftDownAnyR(node.getLeft()) || canShiftDownAnyR(node.getRight());
+        //return false;
     }
 
     /**
@@ -102,7 +95,7 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
         return String.format("Heapsort: Heap besteht aus %d Zahlen:",nums.length);
     }
 
-    public void printHeap() {
+    private void printHeap() {
         printHeapRecur(rootHeapNode);
         System.out.println("\n");
     }
@@ -114,12 +107,17 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
      */
     @Override
     public double[] sortArray(double[] nums) {
+        this.heapInstance = new Heap();
         this.nums = nums;
         this.swapIndex = nums.length;
         this.createHeap();
+        System.out.println("====== Anfangs-Heap =======");
+        this.printHeap();
+        System.out.println("====== /Anfangs-Heap =======");
         this.shiftDownAll();
+        this.printHeap();
         this.swapAndShiftDownAll();
-
+        this.heapToArray();
         return this.nums;
     }
 
@@ -128,36 +126,44 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
      * diese Methode einen einzelnen Tauschvorgang sowie einen
      * Sinkenlassen-Vorgang ausführen.
      */
-    public void singleSwapAndShiftDown() {
-        if (canShiftDownAny()) {
-            System.err.println("Es muss erst alles was geht sinkengelassen werden");
-        }
+    private void singleSwapAndShiftDown() {
         HeapNode active = this.getHeapNodeByIndex(this.swapIndex);
         double tmpvalue = active.getValue();
-        System.out.printf("SWAP: %d --> %d\n", (int)this.rootHeapNode.getValue(), (int)tmpvalue);
         active.setValue(this.rootHeapNode.getValue());
+        System.out.printf("Tausch: %d(%d) --> %d(%d)\n", this.rootHeapNode.getIndex(), (int)this.rootHeapNode.getValue(), active.getIndex(), (int)tmpvalue);
         this.rootHeapNode.setValue(tmpvalue);
         this.swapIndex--;
         this.shiftDown();
     }
 
-    public void swapAndShiftDownAll() {
-        if (canShiftDownAny()) {
-            System.err.println("Es muss erst alles was geht sinkengelassen werden");
-        }
+    private void swapAndShiftDownAll() {
         while (swapIndex > 1) {
             this.singleSwapAndShiftDown();
-            this.printHeap();
         }
     }
 
     /**
-     * Wenn man manuell auf dem Heap arbeiten möchte, kann man
-     * nach dem man die Liste an Zahlen übergeben hat hiermit den Heap erstellen.
+     * Erstellt den Heap aus der eingegebenen Zahlenfolge.
      */
-    public void createHeap() {
+    private void createHeap() {
         rootHeapNode = new HeapNode(nums[0],1);
         createHeapRecursively(rootHeapNode, 1, nums.length);
+    }
+
+    private void heapToArray() {
+        this.heapToArrayR(this.rootHeapNode, 1);
+    }
+
+    private void heapToArrayR(HeapNode node, int index) {
+        if (node == null) {
+            return;
+        }
+        if (index > this.nums.length+1) {
+            return;
+        }
+        this.nums[index-1] = node.getValue();
+        this.heapToArrayR(node.getLeft(), index*2);
+        this.heapToArrayR(node.getRight(), index*2+1);
     }
 
     private void createHeapRecursively(HeapNode node, int binaryTreeNodeIndex, int nodeCount) {
@@ -235,6 +241,14 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
             return right;
         }
 
+        public boolean hasRight() {
+            return !(this.right == null);
+        }
+
+        public boolean hasLeft() {
+            return !(this.left == null);
+        }
+
         @Override
         public String toString() {
             return "HeapNode{" +
@@ -255,65 +269,61 @@ public class Heapsort extends AbstractNumericSortAlgorithm {
          * @param node
          */
         private void singleShiftDown(HeapNode node) {
-            if (node == null) {
-                System.err.println("Node is null du Pappnase!");
-                return;
+            if (node == null) return;
+            if (node.getIndex() > swapIndex) return;
+            boolean shiftToRight = false, shiftToLeft = false;
+
+            // gibt nur rechten Nachfolger
+            if (node.hasRight() && !node.hasLeft()) {
+                if (node.getRight().getIndex() > swapIndex) return;
+                if (node.getRight().getValue() > node.getValue()) {
+                    shiftToRight = true;
+                }
             }
-            else {
-                HeapNode nextNode = null; // Knoten wohin sinken gelassen wurde
-                if (node.getRight() != null && node.getLeft() != null) {
-                    if (node.getLeft().getValue() > node.getValue()) {
-                        if (node.getRight().getValue() > node.getLeft().getValue()) {
-                            if (!(node.getRight().getIndex() < swapIndex)) {
-                                return;
-                            }
-                            double tmpvalue = node.getRight().getValue();
-                            node.getRight().setValue(node.getValue());
-                            node.setValue(tmpvalue);
-                            nextNode = node.getRight();
-                        } else {
-                            if (!(node.getLeft().getIndex() < swapIndex)) {
-                                return;
-                            }
-                            double tmpvalue = node.getLeft().getValue();
-                            node.getLeft().setValue(node.getValue());
-                            node.setValue(tmpvalue);
-                            nextNode = node.getLeft();
-                        }
-                    } else if (node.getRight().getValue() > node.getValue()) {
-                        if (!(node.getRight().getIndex() < swapIndex)) {
-                            return;
-                        }
-                        double tmpvalue = node.getRight().getValue();
-                        node.getRight().setValue(node.getValue());
-                        node.setValue(tmpvalue);
-                        nextNode = node.getRight();
-                    }
-                } else if (node.getRight() != null) {
-                    if (node.getRight().getValue() > node.getValue()) {
-                        if (!(node.getRight().getIndex() < swapIndex)) {
-                            return;
-                        }
-                        double tmpvalue = node.getValue();
-                        node.setValue(node.getRight().getValue());
-                        node.getRight().setValue(tmpvalue);
-                        nextNode = node.getRight();
-                    }
-                } else if (node.getLeft() != null) {
-                    if (node.getLeft().getValue() > node.getValue()) {
-                        if (!(node.getLeft().getIndex() < swapIndex)) {
-                            return;
-                        }
-                        double tmpvalue = node.getValue();
-                        node.setValue(node.getLeft().getValue());
-                        node.getLeft().setValue(tmpvalue);
-                        nextNode = node.getLeft();
+            // gibt zwei NAchfolger
+            if (node.hasRight() && node.hasLeft()) {
+                // rechter NAchfolger größer, linker nicht
+                if (node.getRight().getValue() > node.getValue() &&
+                        !(node.getLeft().getValue() > node.getValue())) {
+                    if (node.getRight().getIndex() > swapIndex) return;
+                    shiftToRight = true;
+                }
+                // linker NAchfolger größer, rechter nicht
+                else if (node.getLeft().getValue() > node.getValue() &&
+                        !(node.getRight().getValue() > node.getValue())) {
+                    if (node.getLeft().getIndex() > swapIndex) return;
+                    shiftToLeft = true;
+                }
+                // beide NAchfolger größer als aktueller Knoten
+                else if (node.getRight().getValue() > node.getValue() &&
+                        (node.getLeft().getValue() > node.getValue())) {
+                    // rechter Nachfolger größer als der Linke
+                    if (node.getRight().getValue() > node.getLeft().getValue()) {
+                        if (node.getRight().getIndex() > swapIndex) return;
+                        shiftToRight = true;
+                    } else {
+                        if (node.getLeft().getIndex() > swapIndex) return;
+                        shiftToLeft = true;
                     }
                 }
-                // Element weiter sinken lassen
-                if (nextNode != null) {
-                    singleShiftDown(nextNode);
+            // gibt nur einen Linken Nachfolger
+            } else if (!node.hasRight() && node.hasLeft()) {
+                if (node.getLeft().getValue() > node.getValue()) {
+                    if (node.getLeft().getIndex() > swapIndex) return;
+                    shiftToLeft = true;
                 }
+            }
+
+            if (shiftToLeft) {
+                double tmpvalue = node.getLeft().getValue();
+                node.getLeft().setValue(node.getValue());
+                node.setValue(tmpvalue);
+                singleShiftDown(node.getLeft());
+            } else if (shiftToRight) {
+                double tmpvalue = node.getRight().getValue();
+                node.getRight().setValue(node.getValue());
+                node.setValue(tmpvalue);
+                singleShiftDown(node.getRight());
             }
         }
     }
